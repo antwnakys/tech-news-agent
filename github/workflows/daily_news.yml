@@ -1,0 +1,32 @@
+name: Daily Tech News Digest
+
+on:
+  schedule:
+    # Runs at 22:00 UTC = 00:00 (midnight) in Athens during winter,
+    # or 23:00 Athens time during summer (daylight saving).
+    # Adjust this if you want it exactly at midnight Athens time year-round.
+    - cron: "0 22 * * *"
+  workflow_dispatch: {}  # lets you trigger it manually from GitHub for testing
+
+jobs:
+  send-digest:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run news agent
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GMAIL_ADDRESS: ${{ secrets.GMAIL_ADDRESS }}
+          GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+          TO_EMAIL: ${{ secrets.TO_EMAIL }}
+        run: python news_agent.py
